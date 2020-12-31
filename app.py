@@ -12,32 +12,32 @@ from statistics import mean
 os.environ['IEX_API_VERSION'] = 'iexcloud-sandbox'
 
 def get_stock_price(ticker):
-    """[summary]
+    """ Get indivdual stock prices
 
     Args:
-        ticker ([type]): [description]
+        ticker : Stock ticker symbols 
 
     Returns:
-        [type]: [description]
+        Current price of stock entered 
     """
     ticker.upper()
     price = Stock(ticker,token = API_TOKEN)
     return price.get_price()
 
 def get_batch_price(tickers):
-    """[summary]
+    """Get prices of multiple stocks by making batch API call
 
     Args:
-        tickers ([type]): [description]
+        tickers: Stock ticker symbols 
 
     Returns:
-        [type]: [description]
+        Current price of each stock 
     """
     batch = Stock(tickers,token = API_TOKEN)
     return batch.get_price()
 
 def stock_quote(symbol):
-    """[summary]
+    """ Get 
 
     Args:
         symbol ([type]): [description]
@@ -63,22 +63,22 @@ def get_stats(symbol):
     return data
 
 def return_percentile(df, time_periods):
-    """[summary]
+    """Calculate percent return of each stock in the specified time period and create new columns in dataframe with calculation for each stock
 
     Args:
-        df ([type]): [description]
-        time_periods ([type]): [description]
+        df : Pandas dataframe
+        time_periods: list of time periods to be examined 
     """
     for row in df.index:
         for time_period in time_periods:
             df.loc[row, f'{time_period} Return Percentile'] = stats.percentileofscore(df[f'{time_period} Price Return'], df.loc[row, f'{time_period} Price Return'])/100
 
 def calculate_hqm(df, time_periods):
-    """[summary]
+    """Calculate the quality of the momentum of each stock using the movement data from the specified time periods 
 
     Args:
-        df ([type]): [description]
-        time_periods ([type]): [description]
+        df : Pandas dataframe 
+        time_periods : list of time periods to be examined
     """
     for row in df.index:
         momentum_percentiles = []
@@ -89,7 +89,7 @@ def calculate_hqm(df, time_periods):
 def main():
     #FILE INPUT 
     try:
-        stocks_file = pd.read_csv('/Users/hsmahal/Documents/StockViz/Stocks.csv')
+        stocks_file = pd.read_csv('FILEPATH')
     except FileNotFoundError:
         print("File not found. Check file path")
 
@@ -110,7 +110,7 @@ def main():
     three_month = []
     one_month = []
 
-    #
+    #Parse data from API and store in lists 
     for symbol in tickers:
         market_cap.append(quote[symbol]['marketCap'])
         one_year.append(stock_returns[symbol]['year1ChangePercent'])
@@ -122,7 +122,7 @@ def main():
     col = ['Ticker','Price']
     df = pd.DataFrame(current_prices.items(),columns=col)
 
-    #
+    #Time periods for stock data to be examined 
     time_periods = [
         'One-Year',
         'Six-Month',
@@ -130,7 +130,7 @@ def main():
         'One-Month'
     ]
 
-    #
+    #Create new colummns in dataframe containing data parsed from API for each stock
     df['Market Cap'] = market_cap
     df['One-Year Price Return'] = one_year
     df['One-Year Return Percentile'] = 0
@@ -142,12 +142,12 @@ def main():
     df['One-Month Return Percentile'] = 0
     df['HQM Score'] = 0
 
-    #
+    #Calculate return percentile and quality of momentum for each stock
     return_percentile(df,time_periods)
     calculate_hqm(df,time_periods)
 
-    #print(df)
-    df.to_excel("/Users/hsmahal/Documents/StockViz/hqm.xlsx", sheet_name = 'Sheet_name_1')
+    #Convert data frame to excel sheet 
+    df.to_excel("FILEPATH", sheet_name = 'Sheet_name_1')
 
 if __name__ == "__main__":
     main()
